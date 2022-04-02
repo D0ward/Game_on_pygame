@@ -55,7 +55,8 @@ class Stone:
 
     def draw(self):
         global debugging
-        screen.draw.filled_circle(pos=self.position, color=(200, 200, 200), radius=self.hp)
+        screen.surface.blit(self.image, dest=self.position)
+        #screen.draw.filled_circle(pos=self.position, color=(200, 200, 200), radius=self.hp)
         if debugging:
             screen.draw.text(f"HP = :{self.hp//1}, pos = :{self.position}", pos=self.position-Vector2(10, 10), color=(50, 50, 200))
 
@@ -279,7 +280,7 @@ def update():
 
 def draw():
     global dead, pause
-    screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    #screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     surface.fill((0, 0, 0, 255 / 5))
     if dead >= num_stones:
         screen.draw.text("WIN", pos=(X0-100, Y0 - 20), fontsize=150, color=(255, 255, 255))
