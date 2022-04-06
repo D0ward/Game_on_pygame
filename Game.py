@@ -12,18 +12,23 @@ X0 = WIDTH // 2
 Y0 = HEIGHT // 2
 surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 stone_png = pygame.image.load('stone.png')
+rocket_png = pygame.transform.scale(pygame.image.load('rocket.png'), (60, 60))
 gravity = Vector2(0, 0.2)
-num_stones = 5
+num_stones = 2
 dead = 0
+lose = False
 #                               КЛАССЫ
+
 
 class Rocket:
     def __init__(self):
+        #self.position = Vector2(Vector2(pygame.mouse.get_pos()).x, HEIGHT-20)
         pass
 
     def draw(self):
-        mouse_vec = Vector2(pygame.mouse.get_pos())
-        screen.draw.filled_circle(pos=(mouse_vec.x, HEIGHT-20), color=(200, 200, 200), radius=15)
+        global rocket_png
+        #screen.draw.filled_circle(pos=self.position, color=(200, 200, 200), radius=15)
+        screen.surface.blit(rocket_png, dest=Vector2(Vector2(pygame.mouse.get_pos()).x, HEIGHT-40))
 
 
 class Shot:
@@ -49,9 +54,12 @@ class Stone:
         self.image = pygame.transform.scale(pygame.image.load('stone.png'), (hp, hp))
 
     def update(self):
+        global lose
         self.position += self.speed
         if self.position.x <= 0 or self.position.x >= WIDTH:
             self.speed.x *= -1
+        if self.position.y >= HEIGHT:
+            lose = True
 
     def draw(self):
         global debugging
@@ -221,6 +229,7 @@ def keys():
     font = 35
     screen.draw.text("ESC-Pause", pos=(0, 40), fontsize=font, color=(255, 255, 255))
     screen.draw.text("SPACE-Fire", pos=(0, font * 2), fontsize=font, color=(255, 255, 255))
+    screen.draw.text("Q-View hp and positions", pos=(0, font * 3), fontsize=font, color=(255, 255, 255))
 
 #                               МАССИВЫ
 
@@ -279,13 +288,16 @@ def update():
 
 
 def draw():
-    global dead, pause
-    #screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    global dead, pause, lose
+    screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     surface.fill((0, 0, 0, 255 / 5))
     if dead >= num_stones:
         screen.draw.text("WIN", pos=(X0-100, Y0 - 20), fontsize=150, color=(255, 255, 255))
         for firework in fireworks:
             firework.draw(surface)
+        screen.blit(surface, pos=(0, 0))
+    elif lose:
+        screen.draw.text("LOSE :(", pos=(X0 - 160, Y0 - 20), fontsize=150, color=(255, 255, 255))
         screen.blit(surface, pos=(0, 0))
     else:
         screen.blit(surface, pos=(0, 0))
