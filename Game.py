@@ -5,16 +5,16 @@ from random import random, randint, uniform
 
 from pgzero.rect import Rect
 from pygame import Color, Surface, Vector2, Rect
-
-WIDTH = 1920
-HEIGHT = 1080
+WIDTH, HEIGHT = map(int, input('Please, write your monitor resolution: ').split())
+WIDTH -= 100
+HEIGHT -= 100
 X0 = WIDTH // 2
 Y0 = HEIGHT // 2
 surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 stone_png = pygame.image.load('stone.png')
 rocket_png = pygame.transform.scale(pygame.image.load('rocket.png'), (60, 60))
 gravity = Vector2(0, 0.2)
-num_stones = 2
+num_stones = 10
 dead = 0
 lose = False
 #                               КЛАССЫ
@@ -208,16 +208,18 @@ class Firework:
 #                               ФУНКЦИИ
 
 def on_key_down(key):
-    global pause, debugging
+    global pause, debugging, num_stones, stones
     mouse_vec = Vector2(pygame.mouse.get_pos())
     if key == pygame.K_SPACE:
-        shots.append(Shot(
-            position=Vector2(mouse_vec.x, HEIGHT-50)
-        ))
+        shots.append(Shot(position=Vector2(mouse_vec.x, HEIGHT-50)))
     if key == pygame.K_ESCAPE:
         pause = not pause
     if key == pygame.K_q:
         debugging = not debugging
+    if key == pygame.K_e:
+        num_stones += 1
+        stones.append(Stone(position=Vector2(random() * WIDTH, 10),hp=uniform(0.15, 0.99999)*70,speed=Vector2(random() * randint(-1, 1), random()*3)))
+
 
 
 def random_vector():
@@ -230,26 +232,18 @@ def keys():
     screen.draw.text("ESC-Pause", pos=(0, 40), fontsize=font, color=(255, 255, 255))
     screen.draw.text("SPACE-Fire", pos=(0, font * 2), fontsize=font, color=(255, 255, 255))
     screen.draw.text("Q-View hp and positions", pos=(0, font * 3), fontsize=font, color=(255, 255, 255))
+    screen.draw.text("E-Spawn asteroid", pos=(0, font * 4), fontsize=font, color=(255, 255, 255))
 
 #                               МАССИВЫ
 
 
-stones = [
-    Stone(
-        position=Vector2(random() * WIDTH, 10),
-        hp=uniform(0.15, 0.99999)*70,
-        speed=Vector2(random() * randint(-1, 1), random()*3)
-    )for _ in range(num_stones)
-]
+stones = [Stone(position=Vector2(random() * WIDTH, 10), hp=uniform(0.15, 0.99999)*70, speed=Vector2(random() * randint(-1, 1), random()*3))for _ in range(num_stones)]
 shots = []
 rocket = Rocket()
 to_delete = []
 pause = False
 debugging = False
-stars = [
-    Vector2(random()*WIDTH, random()*HEIGHT)
-    for _ in range(250)
-]
+stars = [Vector2(random()*WIDTH, random()*HEIGHT)for _ in range(250)]
 fireworks = []
 genesises = []
 #                            UPDATE & DRAW
@@ -288,8 +282,8 @@ def update():
 
 
 def draw():
-    global dead, pause, lose
-    screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    global dead, pause, lose, start
+    flags = pygame.FULLSCREEN
     surface.fill((0, 0, 0, 255 / 5))
     if dead >= num_stones:
         screen.draw.text("WIN", pos=(X0-100, Y0 - 20), fontsize=150, color=(255, 255, 255))
