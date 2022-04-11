@@ -40,10 +40,7 @@ class Shot:
         self.position -= self.speed
 
     def draw(self):
-        screen.draw.filled_rect(
-            Rect(self.position.x, self.position.y, 1, 24),
-            Color(255, 0, 0)
-        )
+        screen.draw.filled_rect(Rect(self.position.x, self.position.y, 1, 24),Color(255, 0, 0))
 
 
 class Stone:
@@ -107,13 +104,7 @@ class Genesis:
         for _ in range(20):
             one_vec = Vector2(-1, 0)
             one_vec = one_vec.rotate(randint(0, 360))
-            self.parts.append(Part(
-                pos=self.pos + (one_vec * rad),
-                vel=one_vec * random.uniform(-0.1, 1),
-                rad=3,
-                clr=self.clr,
-                time=randint(100, 255)
-            ))
+            self.parts.append(Part(pos=self.pos + (one_vec * rad),vel=one_vec * random.uniform(-0.1, 1),rad=3,clr=self.clr,time=randint(100, 255)))
 
     def update(self):
         self.rad += 1
@@ -197,12 +188,7 @@ class Firework:
     def explode(self):
         for i in range(50):
             velocity: Vector2 = random_vector() * randint(2, 10)
-            self.particles.append(Particle(
-                position=Vector2(self.firework.position),
-                speed=velocity,
-                is_firework=False
-                )
-            )
+            self.particles.append(Particle(position=Vector2(self.firework.position),speed=velocity,is_firework=False))
 
 
 #                               ФУНКЦИИ
@@ -285,6 +271,10 @@ def draw():
     global dead, pause, lose, start
     flags = pygame.FULLSCREEN
     surface.fill((0, 0, 0, 255 / 5))
+    if pause:
+        keys()
+        screen.draw.text("PAUSE", pos=(X0 - 140, Y0 - 20), fontsize=150, color=(255, 255, 255))
+        return
     if dead >= num_stones:
         screen.draw.text("WIN", pos=(X0-100, Y0 - 20), fontsize=150, color=(255, 255, 255))
         for firework in fireworks:
@@ -296,9 +286,6 @@ def draw():
     else:
         screen.blit(surface, pos=(0, 0))
     screen.draw.text(f"Kills:{dead}", pos=(10, 10), fontsize=30, color=(255, 255, 255))
-    if pause:
-        keys()
-        screen.draw.text("PAUSE", pos=(X0-140, Y0 - 20), fontsize=150, color=(255, 255, 255))
     for g in genesises:
         g.draw()
     for i in stones:
