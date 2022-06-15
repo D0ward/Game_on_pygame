@@ -9,7 +9,3 @@ pip install pygame pgzero
 
 # Запус игры
 python3 Game.py
-
-
-Не забудьте ввести в начале разрешение экрана
- 
