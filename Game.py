@@ -2,21 +2,25 @@ import pygame
 import random
 import pgzrun
 from random import random, randint, uniform
-
+from time import sleep
 from pgzero.rect import Rect
 from pygame import Color, Surface, Vector2, Rect
-WIDTH, HEIGHT = map(int, input('Please, write your monitor resolution: ').split())
-WIDTH -= 100
-HEIGHT -= 100
+#WIDTH, HEIGHT = map(int, input('Please, write your monitor resolution: ').split())
+WIDTH = 1920
+HEIGHT = 1080
 X0 = WIDTH // 2
 Y0 = HEIGHT // 2
 surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 stone_png = pygame.image.load('stone.png')
 rocket_png = pygame.transform.scale(pygame.image.load('rocket.png'), (60, 60))
 gravity = Vector2(0, 0.2)
-num_stones = 10
+num_stones = 2
 dead = 0
 lose = False
+start = True
+select = 0
+level = 1
+end = False
 #                               КЛАССЫ
 
 
@@ -194,17 +198,23 @@ class Firework:
 #                               ФУНКЦИИ
 
 def on_key_down(key):
-    global pause, debugging, num_stones, stones
+    global pause, debugging, num_stones, stones, select, start, end, lose
     mouse_vec = Vector2(pygame.mouse.get_pos())
     if key == pygame.K_SPACE:
         shots.append(Shot(position=Vector2(mouse_vec.x, HEIGHT-50)))
     if key == pygame.K_ESCAPE:
         pause = not pause
-    if key == pygame.K_q:
+    if key == pygame.K_q and not end:
         debugging = not debugging
-    if key == pygame.K_e:
+    if key == pygame.K_e and select == 1 and not end:
         num_stones += 1
-        stones.append(Stone(position=Vector2(random() * WIDTH, 10),hp=uniform(0.15, 0.99999)*70,speed=Vector2(random() * randint(-1, 1), random()*3)))
+        stones.append(Stone(position=Vector2(random() * WIDTH, 10), hp=uniform(0.15, 0.99999)*70, speed=Vector2(random() * randint(-1, 1), random()*3)))
+    if key == pygame.K_RETURN:
+        start = False
+    if key == pygame.K_DOWN and start:
+        select = 2
+    if key == pygame.K_UP and start:
+        select = 1
 
 
 
@@ -218,7 +228,8 @@ def keys():
     screen.draw.text("ESC-Pause", pos=(0, 40), fontsize=font, color=(255, 255, 255))
     screen.draw.text("SPACE-Fire", pos=(0, font * 2), fontsize=font, color=(255, 255, 255))
     screen.draw.text("Q-View hp and positions", pos=(0, font * 3), fontsize=font, color=(255, 255, 255))
-    screen.draw.text("E-Spawn asteroid", pos=(0, font * 4), fontsize=font, color=(255, 255, 255))
+    if select == 1:
+        screen.draw.text("E-Spawn asteroid", pos=(0, font * 4), fontsize=font, color=(255, 255, 255))
 
 #                               МАССИВЫ
 
@@ -236,7 +247,7 @@ genesises = []
 
 
 def update():
-    global dead, pause
+    global dead, pause, end
     if pause:
         return
     for i in stones:
@@ -255,11 +266,12 @@ def update():
                     shots.remove(j)
     for i in shots:
         i.update()
-    if dead >= num_stones:
+    if end:
         for firework in fireworks:
             firework.update()
         if randint(0, 100) > 75:
             fireworks.append(Firework(pos=Vector2(randint(0, WIDTH), HEIGHT - 10)))
+
     for g in genesises:
         if g.rad < g.mas * 10:
             g.update()
@@ -268,24 +280,49 @@ def update():
 
 
 def draw():
-    global dead, pause, lose, start
-    flags = pygame.FULLSCREEN
+    global dead, pause, lose, start, select, level, stones, num_stones, end
+    screen.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    screen.blit(surface, pos=(0, 0))
     surface.fill((0, 0, 0, 255 / 5))
+    if start:
+        screen.draw.text("Select a mode", pos=(X0 - 350, Y0 - 120), fontsize=150, color=(255, 255, 255))
+        if select == 1:
+            screen.draw.text("Sandbox", pos=(X0 - 350, Y0 - 20), fontsize=75, color=(55, 255, 55))
+            screen.draw.text("Levels", pos=(X0 - 350, Y0 + 40), fontsize=75, color=(255, 255, 255))
+        elif select == 2:
+            screen.draw.text("Sandbox", pos=(X0 - 350, Y0 - 20), fontsize=75, color=(255, 255, 255))
+            screen.draw.text("Levels", pos=(X0 - 350, Y0 + 40), fontsize=75, color=(55, 255, 55))
+        else:
+            screen.draw.text("Sandbox", pos=(X0 - 350, Y0 - 20), fontsize=75, color=(255, 255, 255))
+            screen.draw.text("Levels", pos=(X0 - 350, Y0 + 40), fontsize=75, color=(255, 255, 255))
+        return
     if pause:
         keys()
         screen.draw.text("PAUSE", pos=(X0 - 140, Y0 - 20), fontsize=150, color=(255, 255, 255))
         return
-    if dead >= num_stones:
+    if (dead >= num_stones and select == 1) or (select == 2 and level >= 3):
+        end = True
+    if end:
         screen.draw.text("WIN", pos=(X0-100, Y0 - 20), fontsize=150, color=(255, 255, 255))
         for firework in fireworks:
             firework.draw(surface)
         screen.blit(surface, pos=(0, 0))
-    elif lose:
+        return
+    if dead >= num_stones and select == 2:
+        dead = 0
+        level += 1
+        num_stones *= level
+        stones = [Stone(position=Vector2(random() * WIDTH, 10), hp=uniform(0.15, 0.99999) * 70,
+                  speed=Vector2(random() * randint(-1, 1), random() * 3)) for _ in range(num_stones)]
+    if lose:
         screen.draw.text("LOSE :(", pos=(X0 - 160, Y0 - 20), fontsize=150, color=(255, 255, 255))
         screen.blit(surface, pos=(0, 0))
+        return
     else:
         screen.blit(surface, pos=(0, 0))
     screen.draw.text(f"Kills:{dead}", pos=(10, 10), fontsize=30, color=(255, 255, 255))
+    if select == 2:
+        screen.draw.text(f"Levels:{level}", pos=(10, 60), fontsize=30, color=(255, 255, 255))
     for g in genesises:
         g.draw()
     for i in stones:
