@@ -11,8 +11,8 @@ HEIGHT = 1080
 X0 = WIDTH // 2
 Y0 = HEIGHT // 2
 surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-stone_png = pygame.image.load('stone.png')
-rocket_png = pygame.transform.scale(pygame.image.load('rocket.png'), (60, 60))
+stone_png = pygame.image.load('src/stone.png')
+rocket_png = pygame.transform.scale(pygame.image.load('src/rocket.png'), (60, 60))
 gravity = Vector2(0, 0.2)
 num_stones = 2
 dead = 0
@@ -52,7 +52,7 @@ class Stone:
         self.position = position
         self.speed = speed
         self.hp = hp
-        self.image = pygame.transform.scale(pygame.image.load('stone.png'), (hp, hp))
+        self.image = pygame.transform.scale(pygame.image.load('src/stone.png'), (hp, hp))
 
     def update(self):
         global lose
